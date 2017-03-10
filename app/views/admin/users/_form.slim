@@ -1,0 +1,8 @@
+= simple_form_for @obj, url: path do |f|
+  = render 'form_error', obj: @obj
+  = f.input :name
+  = f.input :uuid
+  = f.input :role
+  = f.input :password
+  = f.input :password_confirmation
+  button.btn.btn-primary Save

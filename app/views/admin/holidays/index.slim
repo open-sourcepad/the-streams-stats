@@ -1,0 +1,19 @@
+h1.page-header
+  | Holidays
+  small
+    = link_to 'Add', new_admin_holiday_path
+
+table.table.table-striped
+  tr
+    th Name
+    th Date
+    th Weekday
+    th
+  - @objs.each do |obj|
+    tr
+      td= obj.name
+      td= obj.date
+      td= obj.is_weekday ? 'true' : 'false'
+      td
+        = link_to edit_admin_holiday_path(obj) do
+          | edit

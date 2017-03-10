@@ -1,0 +1,14 @@
+development: &default
+  adapter: postgresql
+  encoding: utf8
+  host: localhost
+  database: hack_dev #ep_consolodated
+  username:
+  password:
+
+test:
+  <<: *default
+  database: hack_test
+
+production:
+  <<: *default

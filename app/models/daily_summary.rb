@@ -1,0 +1,2 @@
+class DailySummary < ApplicationRecord
+end

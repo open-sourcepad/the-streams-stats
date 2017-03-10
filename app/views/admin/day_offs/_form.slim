@@ -1,0 +1,10 @@
+= simple_form_for @obj, url: path do |f|
+  = render 'form_error', obj: @obj
+  = f.input :user_id, collection: User.order(:name)
+  = f.input :start_date
+  = f.input :end_date
+  = f.input :half_day
+  = f.input :reason
+  = f.input :note
+  = f.input :status, collection: Constants::OFF_STATUS
+  button.btn.btn-primary Save

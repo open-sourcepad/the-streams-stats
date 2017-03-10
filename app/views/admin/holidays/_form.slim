@@ -1,0 +1,5 @@
+= simple_form_for @obj, url: path do |f|
+  = render 'form_error', obj: @obj
+  = f.input :name
+  = f.input :date
+  button.btn.btn-primary Save

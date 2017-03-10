@@ -1,0 +1,18 @@
+h1.page-header
+  | Day Offs
+  small
+    = link_to 'Add', new_admin_day_off_path
+
+table.table.table-striped
+  tr
+    th Date
+    th Status
+    th
+  - @objs.each do |obj|
+    tr
+      td= obj.name
+      td= [obj.start_date, obj.end_date].join(" - ")
+      td= obj.status
+      td
+        = link_to edit_admin_day_off_path(obj) do
+          | edit

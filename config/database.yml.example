@@ -1,0 +1,10 @@
+development:
+  adapter: postgresql
+  database: seshat_dev
+  pool: 5
+  username: PG_USERNAME
+test:
+  adapter: postgresql
+  database: seshat_test
+  pool: 5
+  username: PG_USERNAME
