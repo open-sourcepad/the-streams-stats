@@ -1,6 +1,4 @@
 module WorkLog
-  extend ActiveSupport::Concern
-
   BASE_URL = "http://streamsapp.co/api"
   DEFAULT_GOAL = 28800
   HALF_DAY = 14400
@@ -49,6 +47,17 @@ module WorkLog
     end
   end
 
+  def generate_monthly_data
+    User.all.each do |user|
+      (Date.today.beginning_of_month..Date.today.end_of_month).each do |d|
+        daily = user.daily_summaries.where(work_date: d).first
+        unless daily.present?
+          daily = user.daily_summaries.create(work_date: d, rendered_hours: 0, hours_goal: goal_hour(user, d))
+        end
+      end
+    end
+  end
+
   def daily_summary(user, work_date)
     daily = user.daily_summaries.where(work_date: work_date).first_or_initialize
     daily.rendered_hours = user.project_daily_summaries.where(work_date: work_date).sum(:rendered_hours)
@@ -57,11 +66,15 @@ module WorkLog
   end
 
   def goal_hour(user, work_date)
-    day_off = user.day_offs.where(start_date: work_date).first
-    if day_off.present?
-      day_off.half_day? ? HALF_DAY : 0
+    if ["Sat","Sun"].include?(work_date.strftime("%a"))
+      0
     else
-      DEFAULT_GOAL
+      day_off = user.day_offs.where(start_date: work_date).first
+      if day_off.present?
+        day_off.half_day? ? HALF_DAY : 0
+      else
+        DEFAULT_GOAL
+      end
     end
   end
 

@@ -1,0 +1,36 @@
+
+div style=("margin-left: 200px;margin-right: 200px;margin-top: 30px;padding: 0;height: 100%;font-family:Georgia,Tahoma")
+  hr/
+  p.date style=("text-align: right;font-weight: bold;")  FRI,3 MARCH 2017
+  hr/
+  div
+    center
+      = image_tag("header.png")
+  hr/
+  div
+    p.letter style=("font-size: 20px;")
+      | Hey&nbsp;
+      span.name #{@user.name}
+    p.letter style=("font-size: 20px;")  Good job in completing yesterday's work! Here are some stats the might help motivate you to push more:
+  center
+    p
+      span.rendered style=("position: relative;top: -40px;font-size: 40px;font-weight: bold;")  HOURS RENDERED
+      span.hours style=("font-size: 180px;font-weight: bold;") #{Time.at(@daily.rendered_hours).utc.strftime("%H:%M")}
+    p.sub-hours style=("font-size: 20px;font-weight: bold;text-align: right;position: relative;top: -50px;right: 60px;")  HRS
+  .w3-grey style=("color: #000!important;background-color: #f9f9f9!important;")
+    .w3-light-grey style=("height: 40px;width: #{@week_acc}%;color: #000!important;background-color: #a3a3a3!important;")
+      span.stroke style=("font-size: 17px;-webkit-text-fill-color: white;-webkit-text-stroke-width: 0.3px;-webkit-text-stoke-color: black;font-family: Tahoma;position: relative;top: 10px;left: 10px;") REMAINING FOR THIS WEEK #{Time.at((@weekly_reports.sum(:hours_goal) - @weekly_reports.sum(:rendered_hours))).utc.strftime("%H:%M")}
+  .w3-grey style=("color: #000!important;background-color: #f9f9f9!important;")
+    .w4-light-grey style=("height: 20px;width: #{@month_acc}%;color: #000!important;background-color: #e0e0e0 !important;")
+      span.small-stroke style=("font-size: 16px;-webkit-text-fill-color: #bbb;-webkit-text-stroke-width: 0.3px;-webkit-text-stoke-color: black;font-family: Tahoma;position: relative;top: 0px;left: 10px;") #{Time.at((@monthly_reports.sum(:hours_goal) - @monthly_reports.sum(:rendered_hours))).utc.strftime("%H:%M")} FOR THE MONTH
+  hr.footer-hr style=("margin-top: 50px;") /
+  .footer style=("text-align: center;padding: 15px;font-size: 20px;")
+    | Awesome work!
+    br/
+    | Remember to
+    strong always keep pushing
+    br/
+    br/
+    span.quote style=("font-size: 16px;")
+      i "Some random quote to keep you motivated"
+  hr/
