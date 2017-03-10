@@ -20,6 +20,7 @@ gem 'slim-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'httparty', '0.13.5'
 gem 'unirest'
+gem 'gruff'
 
 # tools
 gem 'devise'

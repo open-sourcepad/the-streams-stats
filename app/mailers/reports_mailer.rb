@@ -35,6 +35,10 @@ class ReportsMailer < ApplicationMailer
       data: File.read(Rails.root.join('app', 'assets', 'images', "daily_report_pie_#{@user.name.downcase.gsub(' ','_')}.png")),
       mime_type: 'image/png'
     }
+    attachments.inline["daily_report_stack_#{@user.name.downcase.gsub(' ','_')}.png"] = {
+      data: File.read(Rails.root.join('app', 'assets', 'images', "daily_report_stack_#{@user.name.downcase.gsub(' ','_')}.png")),
+      mime_type: 'image/png'
+    }
 
 
     mail(hash)
@@ -43,6 +47,7 @@ class ReportsMailer < ApplicationMailer
   def generate_graph
     generate_line_graph
     generate_pie_chart
+    generate_stack
   end
 
   def generate_pie_chart
@@ -57,6 +62,43 @@ class ReportsMailer < ApplicationMailer
     end
 
     g.write(Rails.root.join('app', 'assets', 'images', "daily_report_pie_#{@user.name.downcase.gsub(' ','_')}.png"))
+  end
+
+  def generate_stack
+    @datasets = [
+      [:Jimmy, [25, 36, 86, 39]],
+      [:Charles, [80, 54, 67, 54]],
+      [:Julie, [22, 29, 35, 38]],
+      ]
+
+
+    g = Gruff::StackedBar.new
+    g.title = "Weekly Comparison"
+
+
+    label_hash = {}
+    start_date = Date.yesterday.beginning_of_month
+    end_date = Date.yesterday.end_of_month
+    my_days = [1]
+    result = (start_date..end_date).to_a.select {|k| my_days.include?(k.wday)}
+
+    data_hash = {}
+    result.each_with_index do |d, index|
+      label_hash.merge!(index => d.strftime("%m/%d"))
+      project_data = @user.project_daily_summaries.where("work_date >= ? AND work_date <= ?", d.beginning_of_week, d.end_of_week).order(:project_id).select(:project_id, "SUM(rendered_hours) as total_hours").group(:project_id)
+
+      @project_data.each_with_index do |f, index|
+        data_hash.merge!(f.project.name => []) unless data_hash["#{f.project.name}"].present?
+        data_hash["#{f.project.name}"].push(f.total_hours/3600)
+      end
+    end
+
+    g.labels = label_hash
+    data_hash.to_a.each do |data|
+      g.data(data[0], data[1])
+    end
+    g.write(Rails.root.join('app', 'assets', 'images', "daily_report_stack_#{@user.name.downcase.gsub(' ','_')}.png"))
+
   end
 
   def generate_line_graph
