@@ -3,6 +3,7 @@ module WorkLog
 
   BASE_URL = "http://streamsapp.co/api"
   DEFAULT_GOAL = 28800
+  HALF_DAY = 14400
 
   def get_users
     url = "#{BASE_URL}/users"
@@ -26,11 +27,11 @@ module WorkLog
   end
 
   def get_project_hours(start_date, end_date)
-    start_date = Date.today.beginning_of_week.to_datetime.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
-    end_date = Date.today.end_of_day.to_datetime.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
+    start_date_range = Time.now.beginning_of_week.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
+    end_date_range = Time.now.end_of_day.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
 
     User.all.each do |user|
-      url = "#{BASE_URL}/users/#{user.uuid}/worklogs?start_date=#{start_date}&end_date=#{end_date}"
+      url = "#{BASE_URL}/users/#{user.uuid}/worklogs?start_date=#{start_date_range}&end_date=#{end_date_range}"
       @logs = JSON.parse(Nokogiri::HTML(get_tempfile(url)))
 
       user.project_daily_summaries.update_all(rendered_hours: 0)
@@ -38,8 +39,12 @@ module WorkLog
       @logs["worklogs"].each do |data|
         project = Project.where(pid: data["project_id"]).first_or_create
         proj_hour = ProjectDailySummary.where(user_id: user.id, project_id: project.id, work_date: data["started_at"].to_date).first_or_initialize
-        proj_hour.rendered_hours += data["duration"]
+        proj_hour.rendered_hours += data["billable_duration"]
         proj_hour.save
+      end
+
+      (Date.today.beginning_of_week..Date.today).each do |d|
+        daily_summary(user, d)
       end
     end
   end
@@ -47,13 +52,17 @@ module WorkLog
   def daily_summary(user, work_date)
     daily = user.daily_summaries.where(work_date: work_date).first_or_initialize
     daily.rendered_hours = user.project_daily_summaries.where(work_date: work_date).sum(:rendered_hours)
-
+    daily.hours_goal = goal_hour(user, work_date)
+    daily.save
   end
 
-  def day_off
-  end
-
-  def weekly_summary
+  def goal_hour(user, work_date)
+    day_off = user.day_offs.where(start_date: work_date).first
+    if day_off.present?
+      day_off.half_day? ? HALF_DAY : 0
+    else
+      DEFAULT_GOAL
+    end
   end
 
   def get_tempfile(url)
