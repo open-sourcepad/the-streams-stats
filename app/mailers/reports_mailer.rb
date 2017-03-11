@@ -76,21 +76,29 @@ class ReportsMailer < ApplicationMailer
     g.title = "Weekly Comparison"
 
 
-    label_hash = {}
     start_date = Date.yesterday.beginning_of_month
     end_date = Date.yesterday.end_of_month
-    my_days = [1]
-    result = (start_date..end_date).to_a.select {|k| my_days.include?(k.wday)}
-
-    data_hash = {}
+    result = (start_date..end_date).to_a.select {|k| k.wday.eql?(1)}
+    label_hash = {}
     result.each_with_index do |d, index|
       label_hash.merge!(index => d.strftime("%m/%d"))
-      project_data = @user.project_daily_summaries.where("work_date >= ? AND work_date <= ?", d.beginning_of_week, d.end_of_week).order(:project_id).select(:project_id, "SUM(rendered_hours) as total_hours").group(:project_id)
+    end
 
-      @project_data.each_with_index do |f, index|
-        data_hash.merge!(f.project.name => []) unless data_hash["#{f.project.name}"].present?
-        data_hash["#{f.project.name}"].push(f.total_hours/3600)
+    data_hash = {}
+    project_ids = @user.project_daily_summaries.where("work_date >= ? AND work_date <= ?",start_date, end_date).pluck(:project_id).uniq!
+    project_ids.each do |project|
+      week_hours = []
+      project_name = ""
+      result.each do |d|
+        project_data = @user.project_daily_summaries.where("work_date >= ? AND work_date <= ? AND project_id = ?", d.beginning_of_week, d.end_of_week, project)
+        if project_data.count > 0
+          week_hours.push(project_data.sum(:rendered_hours)/3600)
+          project_name = project_data.first.project.name
+        else
+          week_hours.push(0)
+        end
       end
+      data_hash.merge!("#{project_name}" => week_hours)
     end
 
     g.labels = label_hash
