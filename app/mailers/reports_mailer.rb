@@ -65,19 +65,12 @@ class ReportsMailer < ApplicationMailer
   end
 
   def generate_stack
-    @datasets = [
-      [:Jimmy, [25, 36, 86, 39]],
-      [:Charles, [80, 54, 67, 54]],
-      [:Julie, [22, 29, 35, 38]],
-      ]
-
-
     g = Gruff::StackedBar.new
     g.title = "Weekly Comparison"
 
+    start_date = (4.weeks.ago - 1.day).beginning_of_day.to_datetime
+    end_date = Date.yesterday.end_of_day.to_datetime
 
-    start_date = Date.yesterday.beginning_of_month
-    end_date = Date.yesterday.end_of_month
     result = (start_date..end_date).to_a.select {|k| k.wday.eql?(1)}
     label_hash = {}
     result.each_with_index do |d, index|
@@ -85,7 +78,7 @@ class ReportsMailer < ApplicationMailer
     end
 
     data_hash = {}
-    project_ids = @user.project_daily_summaries.where("work_date >= ? AND work_date <= ?",start_date, end_date).pluck(:project_id).uniq!
+    project_ids = @user.project_daily_summaries.where("work_date >= ? AND work_date <= ?", start_date, end_date).pluck(:project_id).uniq
     project_ids.each do |project|
       week_hours = []
       project_name = ""
@@ -116,7 +109,8 @@ class ReportsMailer < ApplicationMailer
     label_hash = {}
     hours_hash = []
 
-    @weekly_reports.order(:work_date).each_with_index do |d, index|
+    reports = @user.daily_summaries.where("work_date >= ? AND work_date <= ?", 7.days.ago.beginning_of_day, Date.yesterday.end_of_day)
+    reports.order(:work_date).each_with_index do |d, index|
       label_hash.merge!(index => d.work_date.strftime("%a %m/%d"))
       hours_hash.push(d.rendered_hours/3600)
     end

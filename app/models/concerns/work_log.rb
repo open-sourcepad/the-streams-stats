@@ -25,8 +25,13 @@ module WorkLog
   end
 
   def get_project_hours(start_date, end_date)
-    start_date_range = Time.now.beginning_of_week.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
-    end_date_range = Time.now.end_of_day.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
+    if start_date && end_date
+      start_date_range = Date.parse(start_date).beginning_of_week.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
+      end_date_range = Date.parse(end_date).end_of_day.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
+    else
+      start_date_range = Time.now.beginning_of_week.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
+      end_date_range = Time.now.end_of_day.in_time_zone("Eastern Time (US & Canada)").strftime("%FT%T%:z")
+    end
 
     User.all.each do |user|
       url = "#{BASE_URL}/users/#{user.uuid}/worklogs?start_date=#{start_date_range}&end_date=#{end_date_range}"
